@@ -10,6 +10,7 @@ using AdiabaticEvolution
     Ω = 2.0 * 2π
     α = 1.0 * 2π
     τ = 1.0
+    
     t_total = 16.0
     times = -8:0.01:8
     
@@ -20,7 +21,7 @@ using AdiabaticEvolution
     Deltavec = [Delta_0(t) for t in times]
     
     # Create the plot
-    p = Plots.plot(times, [Omegavec/2/pi, Deltavec/2/pi], 
+    p = Plots.plot(times, [real(Omegavec)/2/pi, real(Deltavec)/2/pi], 
         label=["Rabi Frequency Ω(t)" "Detuning Δ(t)"],
         title="ARP Pulse Parameters",
         xlabel="Time",
