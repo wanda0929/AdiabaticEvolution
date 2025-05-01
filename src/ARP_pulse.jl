@@ -21,6 +21,7 @@ function Rabi_ARP(Ω::Float64, τ::Float64, α::Float64)
     return O
 end
 
+
 function detuning_ARP(α::Float64, t0 = [-5.0 , 5.0])
     function δ(t::Float64)
         if -8 <= t <= 0
@@ -53,10 +54,31 @@ function evolve_ARP(reg, hamiltonian, t_total::Float64, Nt = 10000)
     dt = t_total / Nt
     phases = Float64[]
     times = Float64[]
-    
+    statevectorr = Float64[]
+    zz_1 = (I2-Z)/2
+    zz_2 = (I2+Z)/2
+    z1 = kron(I2,zz_1) + kron(zz_1,I2)
+    z2 = kron(zz_2,zz_2)
+    populations_g = Float64[]
+    populations_r = Float64[]
+    #statevec = []
     # 初始相位
     push!(phases, 0.0)
     push!(times, 0.0)
+    push!(statevectorr, 0.0)
+    #push!(populations_g, 1.0)
+    #push!(populations_r, 0.0)
+
+    if length(reg.state) == 2
+        push!(populations_g, expect(put(1,1=>zz_1), reg))
+        push!(populations_r, expect(put(1,1=>zz_2), reg))
+    elseif length(reg.state) == 4   
+        push!(populations_g, expect(put(2,(1,2)=>z2), reg))
+        push!(populations_r, expect(put(2,(1,2)=>z1), reg))
+    else
+        error("reg must be a single-qubit or two-qubit state")
+    end
+    #push!(populations, [abs2(reg.state[1]), abs2(reg.state[2]), abs2(reg.state[3])])
     
     # 计算一个完整周期后的演化算符矩阵
     for it = 1:Nt
@@ -68,6 +90,17 @@ function evolve_ARP(reg, hamiltonian, t_total::Float64, Nt = 10000)
         current_phase = angle(reg.state[1])
         push!(phases, current_phase)
         push!(times, t)
+        if length(reg.state) == 2
+            push!(populations_g, expect(put(1,1=>zz_1), reg))
+            push!(populations_r, expect(put(1,1=>zz_2), reg))
+            statevec1 = real(reg.state[1])
+            push!(statevectorr, statevec1)
+        elseif length(reg.state) == 4   
+            push!(populations_g, expect(put(2,(1,2)=>z2), reg))
+            push!(populations_r, expect(put(2,(1,2)=>z1), reg))
+            statevec0 = real(reg.state[1])
+            push!(statevectorr, statevec0)
+        end
     end
-    return reg, times, phases
+    return reg, times, phases, populations_g, populations_r, statevectorr
 end
