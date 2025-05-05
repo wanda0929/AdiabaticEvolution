@@ -12,7 +12,7 @@ function Rabi_ARP(Ω::Float64, τ::Float64, α::Float64)
             return Ω * (exp(-(t+5)^2/(2*τ^2)))
             #return real(Ω * (exp(-(t+5)^2/(2*τ^2)-im * α * (t+5)^2/2)))
         elseif 0 < t <= 8
-            return -real(Ω * (exp(-(t-5)^2/(2*τ^2)))) 
+            return real(Ω * (exp(-(t-5)^2/(2*τ^2)))) 
             #return -real(Ω * (exp(-(t-5)^2/(2*τ^2)-im * α * (t-5)^2/2)))
         else
             return 0.0
