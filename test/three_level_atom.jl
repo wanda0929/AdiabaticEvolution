@@ -5,6 +5,7 @@ using QuantumOptics
 using Revise
 using AdiabaticEvolution
 using OrdinaryDiffEq
+using Yao, Yao.EasyBuild
 
 @testset "STIRAP pulse" begin
     Ω1 = 10.0 * 2π
@@ -28,45 +29,37 @@ using OrdinaryDiffEq
     @test p isa Plots.Plot
 end
 
-
-
-@testset "Three-level atom Hamiltonian" begin
-    # Test parameters
-    Ω1 = 10.0 * 2π
-    Ω2 = 10.0 * 2π
-    τ = 1.0
-    Dt = 2.0
-    Ω1_func = STIRAP_pulse_c(Ω1, τ, Dt)
-    Ω2_func = STIRAP_pulse_s(Ω2, τ)
-    Δ1 = 0.0
-    Δ2 = 0.0
+@testset "Three-level atom dynamics" begin
+    # 设置参数
+    Ω = 1.0  # Rabi频率
+    τ = 1.0  # 脉冲宽度
+    Dt = 2.0  # 脉冲延迟
+    t_total = 10.0  # 总演化时间
     
-    # Test Hamiltonian
-    H_func = three_level_hamiltonian_time_dependent(
-        Ω1_func,  # Constant Ω1
-        Ω2_func,  # Constant Ω2
-        Δ1,
-        Δ2
-    )
+    # 创建STIRAP脉冲
+    Ω1_func, Ω2_func, Δ1_func, Δ2_func = create_stirap_pulses(Ω, τ, Dt)
     
-    # Test at specific time
-    H = H_func(1.0, create_initial_state(1))
-    @test isa(H, Operator)
-    @test length(H.basis_l) == 3
-    @test length(H.basis_r) == 3
+    # 创建哈密顿量
+    H = create_time_dependent_hamiltonian(Ω1_func, Ω2_func, Δ1_func, Δ2_func)
     
-    # Test evolution
-    ψ0 = create_initial_state(1)  # Start in state |1⟩
-    t_total = 10.0
-    final_ψ, times, populations = evolve_three_level(ψ0, H_func, t_total)
+    # 创建初始态
+    reg = create_initial_state()
+    
+    # 演化系统
+    reg, times, populations = evolve_three_level(reg, H, t_total)
     
     # 绘制布居数演化
-    p = plot(times, [pop[1] for pop in populations], label="|1⟩")
-    plot!(p, times, [pop[2] for pop in populations], label="|2⟩")
-    plot!(p, times, [pop[3] for pop in populations], label="|3⟩")
-    xlabel!("Time")
-    ylabel!("Population")
-    title!("STIRAP evolution")
-display(p)
-end 
+    p = plot(times, hcat(populations...), 
+        label=["|g⟩" "|e⟩" "|r⟩"],
+        title="Three-level atom population evolution",
+        xlabel="Time",
+        ylabel="Population",
+        linewidth=2)
+    display(p)
+    
+    # 测试
+    @test length(times) == length(populations)
+    @test length(populations[1]) == 3  # 三个能级的布居数
+    @test sum(populations[end]) ≈ 1.0  # 布居数守恒
+end
 

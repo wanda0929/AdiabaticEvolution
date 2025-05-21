@@ -1,25 +1,48 @@
-# AdiabaticEvolution
+# ParityGate
 
-A Julia package for simulating adiabatic evolution processes.
+一个用于量子计算的Julia包，实现了奇偶门（Parity Gate）功能。
 
-## Installation
-
-To install this package, open Julia and type:
+## 安装
 
 ```julia
-] add AdiabaticEvolution
+using Pkg
+Pkg.add("https://github.com/yourusername/parity_gate.git")
 ```
 
-## Usage
+## 使用方法
 
 ```julia
-using AdiabaticEvolution
+using ParityGate
+using Yao
+
+# 创建一个2量子比特的奇偶门
+circuit = parity_gate(2)
+
+# 创建一个量子寄存器
+reg = zero_state(2)
+
+# 应用奇偶门
+apply_parity_gate!(reg, circuit)
 ```
 
-## Development
+## 功能
 
-This package is under active development. Feel free to open issues or submit pull requests.
+- `parity_gate(n::Int)`: 创建一个n量子比特的奇偶门
+- `apply_parity_gate!(reg::ArrayReg, circuit::ChainBlock)`: 将奇偶门应用到量子寄存器上
 
-## License
+## 示例
 
-This package is licensed under the MIT License. 
+```julia
+# 创建一个3量子比特的奇偶门
+circuit = parity_gate(3)
+
+# 创建一个初始状态|111⟩
+reg = product_state(3, 0b111)
+
+# 应用奇偶门
+apply_parity_gate!(reg, circuit)
+```
+
+## 许可证
+
+MIT 
